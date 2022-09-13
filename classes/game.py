@@ -1,22 +1,42 @@
-
+import shutil
 import os
 import random
 import time
 import csv
+from getkey import getkey, key
 
 
 class Game:
 
     def __init__(self) -> None:
         self.menu_state = None
+        self.title_img = ''
+        with open('./data/title.txt','r') as tlt:
+            self.title_img = tlt.read()
+            tlt.close()
 
-    def set_menu_state(self):
-        self._print_menu()
-        option = input('Elija una opcion ')
-        if option == '1':
+    def set_menu_state(self): 
+        initial_key = None
+        option = 0
+        while initial_key != key.ENTER:
+            self._print_menu(option)
+            initial_key = getkey()
+            if initial_key == key.UP:
+                if option == 0:
+                    option = 2
+                else:
+                    option = option - 1
+            elif initial_key == key.DOWN:
+                if option == 2:
+                    option = 0
+                else:
+                    option = option + 1
+
+        print(option)
+        if option == 0:
             return 'new_game'
 
-        elif option == '2':
+        elif option == 1:
             return 'score'
 
         else:
@@ -32,21 +52,24 @@ class Game:
     def _start_view(self, word, player):
         trys = 10
         print_message = '_ '
-        attempt = [print_message for i in word]
+        attempt = [print_message for _ in word]
+        words_used = []
         while True:
 
             os.system('clear')
             print(f"Jugador: {player.name}")
             print(f'Te quedan {trys} intentos')
-            print("\n\n")
-            print(*attempt)
-            print("\n\n")
+            print(f'Letras Usadas: ',*words_used)
+            print("\n\n","\t",*attempt,"\n\n")
             char = input('Ingrese una letra: ')
+            
             if len(char) != 1 or type(char) != str:
                 print('No ingrese mas de una letra')
                 time.sleep(1)
                 char = ""
             else:
+
+                words_used = self.check_if_repeat(words_used,char)
                 count = 0
                 for value in word:
                     if char == value:
@@ -69,7 +92,7 @@ class Game:
     def _win(self, state, player, word, trys):
         os.system('clear')
         if (state):
-            self.save_player_score(player,trys)
+            self.save_player_score(player, trys)
             print(""" 
                         Felicidades Ganaste
                       La palabra era:""", word)
@@ -81,16 +104,16 @@ class Game:
             _ = input('\nPresiona enter para continuar')
 
     def exit(self):
-        pass
+        os.system('clear')
 
     def show_score(self):
         os.system('clear')
-        player_scores = self.old_scores()
+        player_scores = self._old_scores()
         for key, val in player_scores.items():
             print(key, '', val)
         _ = input('\nPresiona enter para volver al menu')
 
-    def old_scores(self):
+    def _old_scores(self):
         with open('./data/players_scores.csv', 'r') as f:
             reader = csv.DictReader(f)
             for i in reader:
@@ -110,7 +133,7 @@ class Game:
         fieldnames = []
         count = 0
 
-        player_scores = self.old_scores()
+        player_scores = self._old_scores()
 
         for key, val in player_scores.items():
             if key == name:
@@ -123,18 +146,21 @@ class Game:
 
         for key, val in player_scores.items():
             fieldnames.append(key)
-    
+
         self.write_new_scores(player_scores, fieldnames)
 
-
-    def _print_menu(self):
+    def _print_menu(self,state = 0):
         os.system('clear')
-        print(""" 
-                    1) Iniciar Juego
-                    2) Score
-                    3) salir
-
-                     """)
+        tab = '\t'
+        space = ' '
+        
+        print(self.title_img)  
+        if state == 0:
+            print(f"\n {tab*4} --> Iniciar Juego \n {tab*4 + space*4} Score \n {tab*4 + space*4} salir")
+        elif state == 1:
+            print(f"\n {tab*4 + space*4} Iniciar Juego \n {tab*4} --> Score \n {tab*4 + space*4} salir")
+        else:
+            print(f"\n {tab*4 + space*4} Iniciar Juego \n {tab*4 + space*4} Score \n {tab*4} --> salir")
 
     def _set_word(self):
         with open('./data/data.txt', 'r') as f:
@@ -142,6 +168,16 @@ class Game:
             random_number = random.randint(0, len(words) - 1)
 
         return words[random_number]
+    
+    def _print_hangman(self,trys_left, initial_trys):
+        pass
+
+    def check_if_repeat(self,list,char):
+        for i in list:
+            if i == char:
+                return list
+        list.append(char)
+        return list
 
 
 class Player:

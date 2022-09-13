@@ -2,6 +2,7 @@
 import os
 import random
 import time
+import csv
 
 
 class Game:
@@ -29,12 +30,14 @@ class Game:
         self._start_view(word, player)
 
     def _start_view(self, word, player):
+        trys = 10
         print_message = '_ '
         attempt = [print_message for i in word]
         while True:
 
             os.system('clear')
             print(f"Jugador: {player.name}")
+            print(f'Te quedan {trys} intentos')
             print("\n\n")
             print(*attempt)
             print("\n\n")
@@ -50,24 +53,79 @@ class Game:
                         attempt[count] = char
                     count += 1
 
+                if char in list(word):
+                    pass
+                else:
+                    trys -= 1
+
                 if word == ''.join(attempt):
-                    self._win(True, player)
+                    self._win(True, player, word, trys)
                     break
 
-    def _win(self, state, player):
+                if trys == 0:
+                    self._win(False, player, word, trys)
+                    break
+
+    def _win(self, state, player, word, trys):
         os.system('clear')
         if (state):
+            self.save_player_score(player,trys)
             print(""" 
                         Felicidades Ganaste
-                         
-                         """)
-            _ = input('Presiona enter para continuar')
+                      La palabra era:""", word)
+            _ = input('\nPresiona enter para continuar')
+        else:
+            print(""" 
+                            Perdiste :c
+                      La palabra era:""", word)
+            _ = input('\nPresiona enter para continuar')
 
     def exit(self):
         pass
 
-    def save_player_score(self):
-        pass
+    def show_score(self):
+        os.system('clear')
+        player_scores = self.old_scores()
+        for key, val in player_scores.items():
+            print(key, '', val)
+        _ = input('\nPresiona enter para volver al menu')
+
+    def old_scores(self):
+        with open('./data/players_scores.csv', 'r') as f:
+            reader = csv.DictReader(f)
+            for i in reader:
+                player_scores = i
+        return player_scores
+
+    def write_new_scores(self, player_scores, fieldnames):
+        with open('./data/players_scores.csv', 'w') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+
+            writer.writeheader()
+            writer.writerow(player_scores)
+
+    def save_player_score(self, player, trys):
+        name = player.name
+        score = trys * 10
+        fieldnames = []
+        count = 0
+
+        player_scores = self.old_scores()
+
+        for key, val in player_scores.items():
+            if key == name:
+                player_scores[key] = str(int(val) + score)
+            else:
+                count += 1
+
+        if count == len(player_scores.keys()):
+            player_scores = player_scores | {name: str(score)}
+
+        for key, val in player_scores.items():
+            fieldnames.append(key)
+    
+        self.write_new_scores(player_scores, fieldnames)
+
 
     def _print_menu(self):
         os.system('clear')

@@ -1,4 +1,5 @@
 env/
+venv/
 ejercicios/
 archivos/
 .DS_Store

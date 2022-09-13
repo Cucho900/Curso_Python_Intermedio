@@ -5,6 +5,79 @@ import time
 import csv
 from getkey import getkey, key
 
+AHORCADO = ['''
+    
+    
+    
+    
+    
+    
+    =========''','''
+    
+          |
+          |
+          |
+          |
+          |
+    =========''','''
+      +---+
+          |
+          |
+          |
+          |
+          |
+    =========''','''
+      +---+
+      |   |
+          |
+          |
+          |
+          |
+    =========''', '''
+      +---+
+      |   |
+      O   |
+          |
+          |
+          |
+    =========''', '''
+      +---+
+      |   |
+      O   |
+      |   |
+          |
+          |
+    =========''', '''
+      +---+
+      |   |
+      O   |
+     /|   |
+          |
+          |
+    =========''', '''
+      +---+
+      |   |
+      O   |
+     /|\  |
+          |
+          |
+    =========''', '''
+      +---+
+      |   |
+      O   |
+     /|\  |
+     /    |
+          |
+    =========''', '''
+      +---+
+      |   |
+      O   |
+     /|\  |
+     / \  |
+          |
+    =========''']
+
+ahorcado = AHORCADO[::-1]
 
 class Game:
 
@@ -51,6 +124,7 @@ class Game:
 
     def _start_view(self, word, player):
         trys = 10
+        space = ' '
         print_message = '_ '
         attempt = [print_message for _ in word]
         words_used = []
@@ -61,9 +135,10 @@ class Game:
             print(f'Te quedan {trys} intentos')
             print(f'Letras Usadas: ',*words_used)
             print("\n\n","\t",*attempt,"\n\n")
+            print(ahorcado[trys - 1])
             char = input('Ingrese una letra: ')
-            
-            if len(char) != 1 or type(char) != str:
+
+            if len(char) != 1:
                 print('No ingrese mas de una letra')
                 time.sleep(1)
                 char = ""
@@ -168,9 +243,6 @@ class Game:
             random_number = random.randint(0, len(words) - 1)
 
         return words[random_number]
-    
-    def _print_hangman(self,trys_left, initial_trys):
-        pass
 
     def check_if_repeat(self,list,char):
         for i in list:
